@@ -1,26 +1,55 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #f7f0e6;
+  --ink: #0b1113;
+  --night: #06131a;
+  --night-2: #081c24;
+  --line: rgba(247, 240, 230, 0.14);
+  --line-2: rgba(247, 240, 230, 0.08);
+  --glow: rgba(255, 224, 176, 0.22);
+  --accent: #ffd08a;
+  --accent-2: #94f2ff;
+  --danger: #ff4d4d;
+  --muted: rgba(247, 240, 230, 0.72);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-background: var(--night);
+  --color-foreground: var(--paper);
+  --font-sans: var(--font-plex-sans);
+  --font-mono: var(--font-plex-mono);
+  --font-display: var(--font-fraunces);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: radial-gradient(1200px 700px at 20% 10%, rgba(148, 242, 255, 0.08), transparent 55%),
+    radial-gradient(900px 560px at 78% 28%, rgba(255, 208, 138, 0.1), transparent 52%),
+    linear-gradient(180deg, var(--night), var(--night-2));
+  color: var(--paper);
+  font-family: var(--font-plex-sans), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(to right, var(--line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line-2) 1px, transparent 1px),
+    radial-gradient(600px 360px at 50% -20%, var(--glow), transparent 72%);
+  background-size: 72px 72px, 72px 72px, 100% 100%;
+  mix-blend-mode: screen;
+  opacity: 0.9;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+  opacity: 0.06;
+  mix-blend-mode: overlay;
 }

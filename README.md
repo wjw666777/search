@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Tools for trade reps: find (1) people at a target company and (2) startups in a country + niche, powered by Exa. Export results as TSV for outreach workflows.
 
-## Getting Started
+## Features
 
-First, run the development server:
+- People Search (`/`)
+- Query builder: company, domain, role keywords, location, seniority, extra keywords
+- Modes: People (profile-focused) / Web (broader pages)
+- LinkedIn-only toggle (People mode): restrict to linkedin.com results
+- Results: select, copy TSV, download TSV
+- Local form persistence
+
+- Company Scout (`/company-scout`)
+- Query builder: country + niche + features + “startup” intent
+- Output fields: name, website, extracted emails (best effort), intro/details, sources
+- Results: select, copy TSV, download TSV
+
+## Setup
+Create `.env.local` in this folder:
+
+```bash
+EXA_API_KEY=your_exa_api_key
+```
+
+Optional:
+
+```bash
+EXA_API_URL=https://api.exa.ai/search
+```
+
+Notes:
+- The API key is used server-side only (not exposed to the browser).
+- If you already use Exa MCP, you can reuse the same API key here.
+
+## Run locally
+
+```bash
+npm install
+```
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Key files
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- People UI: [page.tsx](src/app/page.tsx)
+- People API: [route.ts](src/app/api/people-search/route.ts)
+- Company Scout UI: [page.tsx](src/app/company-scout/page.tsx)
+- Company Scout API: [route.ts](src/app/api/company-scout/route.ts)
 
-## Learn More
+## Query tips
 
-To learn more about Next.js, take a look at the following resources:
+- Procurement: `procurement manager buyer sourcing at {Company} {Country}`
+- Supply chain: `supply chain sourcing at {Company} {Region}`
+- Import-related: `import manager purchasing at {Company}`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Compliance
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Use this for public information only. Follow target sites’ terms and local laws; avoid harassment or abuse.
