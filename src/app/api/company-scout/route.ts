@@ -117,9 +117,9 @@ async function enrichEmailsForDomain(opts: {
     const results = await exaSearch(opts.apiUrl, opts.apiKey, {
       query: q,
       type: "auto",
-      numResults: 5,
+      numResults: 3,
       includeDomains: [domain],
-      contents: { text: { maxCharacters: 4500 } },
+      contents: { text: { maxCharacters: 2500 } },
     });
 
     const text = results.map((r) => pickSnippet(r)).join("\n");
@@ -128,10 +128,30 @@ async function enrichEmailsForDomain(opts: {
   }
 
   const homepage = normalizeWebsite(domain);
-  const html = await fetchWithTimeout(homepage, 4500);
+  const html = await fetchWithTimeout(homepage, 2500);
   if (!html) return [];
   const emails = extractEmails(html);
   return emails.slice(0, 3);
+}
+
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  concurrency: number,
+  fn: (item: T, index: number) => Promise<R>,
+) {
+  const results: R[] = new Array(items.length);
+  let cursor = 0;
+  const workers = Array.from({ length: Math.max(1, concurrency) }).map(
+    async () => {
+      while (cursor < items.length) {
+        const i = cursor;
+        cursor += 1;
+        results[i] = await fn(items[i], i);
+      }
+    },
+  );
+  await Promise.all(workers);
+  return results;
 }
 
 export async function POST(req: Request) {
@@ -204,21 +224,21 @@ export async function POST(req: Request) {
 
     if (!enrichEmails) return Response.json({ results: baseRows });
 
-    const enriched: typeof baseRows = [];
-    const maxEnrich = Math.min(10, baseRows.length);
-    for (let i = 0; i < baseRows.length; i++) {
-      const row = baseRows[i];
-      if (i < maxEnrich) {
-        const emails = await enrichEmailsForDomain({
-          apiUrl,
-          apiKey,
-          domain: row.domain || row.website,
-          companyName: row.name,
-        });
-        row.emails = uniq(emails).slice(0, 3);
-      }
-      enriched.push(row);
-    }
+    const isVercel = !!process.env.VERCEL;
+    const maxEnrich = Math.min(isVercel ? 3 : 10, baseRows.length);
+    const concurrency = isVercel ? 3 : 5;
+
+    const enriched = await mapWithConcurrency(baseRows, concurrency, async (row, i) => {
+      if (i >= maxEnrich) return row;
+      const emails = await enrichEmailsForDomain({
+        apiUrl,
+        apiKey,
+        domain: row.domain || row.website,
+        companyName: row.name,
+      });
+      row.emails = uniq(emails).slice(0, 3);
+      return row;
+    });
 
     return Response.json({ results: enriched });
   } catch (e) {
@@ -226,4 +246,3 @@ export async function POST(req: Request) {
     return Response.json({ error: msg }, { status: 502 });
   }
 }
-

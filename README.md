@@ -31,6 +31,16 @@ Notes:
 - The API key is used server-side only (not exposed to the browser).
 - If you already use Exa MCP, you can reuse the same API key here.
 
+## Deploy on Vercel
+
+1) Import the GitHub repo in Vercel and set the project root to this repository.
+2) Add Environment Variables:
+   - `EXA_API_KEY` (required)
+   - `EXA_API_URL` (optional, default: `https://api.exa.ai/search`)
+3) Deploy. After deployment, test:
+   - `/` (People Search)
+   - `/company-scout` (Company Scout)
+
 ## Run locally
 
 ```bash

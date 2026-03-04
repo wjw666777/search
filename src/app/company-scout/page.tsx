@@ -56,8 +56,7 @@ function toTsv(rows: CompanyRow[]) {
   return `${header}\n${body}\n`;
 }
 
-function downloadText(filename: string, text: string) {
-  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+function downloadBlob(filename: string, blob: Blob) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -66,6 +65,42 @@ function downloadText(filename: string, text: string) {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+}
+
+async function downloadXlsx(filename: string, rows: CompanyRow[]) {
+  const XLSX = await import("xlsx");
+  const aoa: Array<Array<string>> = [
+    ["name", "website", "emails", "intro", "details", "sources"],
+    ...rows.map((r) => [
+      r.name ?? "",
+      r.website ?? "",
+      r.emails.join(", "),
+      r.intro ?? "",
+      r.details ?? "",
+      r.sources.join(", "),
+    ]),
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws["!cols"] = [
+    { wch: 28 },
+    { wch: 34 },
+    { wch: 28 },
+    { wch: 52 },
+    { wch: 64 },
+    { wch: 48 },
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "companies");
+
+  const out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  downloadBlob(
+    filename,
+    new Blob([out], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    }),
+  );
 }
 
 function buildSuggestedQuery(f: FormState) {
@@ -105,7 +140,7 @@ export default function CompanyScoutPage() {
     languageHint: "en",
     mode: "company",
     numResults: 15,
-    enrichEmails: true,
+    enrichEmails: false,
     queryOverride: "",
   });
 
@@ -504,14 +539,14 @@ export default function CompanyScoutPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    const tsv = toTsv(selectedRows.length ? selectedRows : rows);
-                    downloadText("companies.tsv", tsv);
+                  onClick={async () => {
+                    const list = selectedRows.length ? selectedRows : rows;
+                    await downloadXlsx("companies.xlsx", list);
                   }}
                   disabled={!rows.length}
                   className="h-10 rounded-2xl border border-[rgba(255,208,138,0.55)] bg-[rgba(255,208,138,0.12)] px-3 text-xs text-[rgba(247,240,230,0.92)] transition hover:bg-[rgba(255,208,138,0.15)] disabled:opacity-50"
                 >
-                  下载 TSV
+                  下载 XLSX
                 </button>
               </div>
             </div>
@@ -682,4 +717,3 @@ export default function CompanyScoutPage() {
     </div>
   );
 }
-
